@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { UserSignupPage } from './pages/UserSignupPage';
-
 
 ReactDOM.render(
   <React.StrictMode>
