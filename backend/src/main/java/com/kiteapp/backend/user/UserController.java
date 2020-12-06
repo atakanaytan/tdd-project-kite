@@ -1,5 +1,7 @@
 package com.kiteapp.backend.user;
 
+import javax.validation.Valid;
+
 import com.kiteapp.backend.shared.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +15,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/api/1.0/users")
-    GenericResponse createUser(@RequestBody User user) {
+    GenericResponse createUser(@Valid @RequestBody User user) {
         userService.save(user);
         return new GenericResponse("User Saved");
     }
