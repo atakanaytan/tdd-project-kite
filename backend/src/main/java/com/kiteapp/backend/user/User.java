@@ -1,5 +1,6 @@
 package com.kiteapp.backend.user;
 
+import com.kiteapp.backend.UniqueUsername;
 import lombok.Data;
 
 import javax.persistence.Entity;
@@ -19,6 +20,7 @@ public class User {
 
     @NotBlank(message = "{user.username.NotBlank}")
     @Size(min = 8, max = 255, message = "{user.username.Size}")
+    @UniqueUsername
     private String username;
 
     @NotBlank(message = "{user.displayname.NotBlank}")
