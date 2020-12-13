@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -17,17 +17,18 @@ public class User {
     @GeneratedValue
     private long id;
 
-    @NotNull
-    @Size(min = 4, max = 255)
+    @NotBlank(message = "{user.username.NotBlank}")
+    @Size(min = 8, max = 255, message = "{user.username.Size}")
     private String username;
 
-    @NotNull
-    @Size(min = 4, max = 255)
+    @NotBlank(message = "{user.displayname.NotBlank}")
+    @Size(min = 8, max = 255, message = "{user.displayname.Size}"
+    )
     private String displayName;
 
-    @NotNull
-    @Size(min = 8, max = 255)
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$")
-    private String password;
 
+    @NotBlank(message = "{user.password.NotBlank}")
+    @Size(min = 8, max = 255, message = "{user.password.Size}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message="{user.password.Pattern}")
+    private String password;
 }
