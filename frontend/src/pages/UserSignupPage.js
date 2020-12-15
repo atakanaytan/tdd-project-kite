@@ -1,4 +1,5 @@
 import React from 'react';
+import Input from '../components/Input';
 
 export class UserSignupPage extends React.Component {
 
@@ -38,7 +39,9 @@ export class UserSignupPage extends React.Component {
             password: this.state.password
         };
         this.setState({ pendingApiCall: true })
-        this.props.actions.postSignup(user).then((response) => {
+        this.props.actions
+          .postSignup(user)
+          .then((response) => {
             this.setState({ pendingApiCall: false })    
         })
         .catch((apiError) =>  {
@@ -55,45 +58,49 @@ export class UserSignupPage extends React.Component {
             <div className="container">
                 <h1 className="text-center">Sign Up</h1>  
                 <div className="col-12 mb-3">
-                   <label>Display Name</label>
-                   <input 
-                     className="form-control"   
+                  <Input
+                     label="Display Name"                         
                      placeholder="Your display name" 
                      value={this.state.displayName} 
-                     onChange={this.onChangeDisplayName}   
+                     onChange={this.onChangeDisplayName}  
+                     hasError={this.state.errors.displayName && true}
+                     error={this.state.errors.displayName} 
+                  />
+                </div>
+                <div className="col-12 mb-3">
+                  <Input
+                     label="Username"     
+                     className="form-control"  
+                     placeholder="Your username"
+                     value={this.state.username}
+                     onChange={this.onChangeUserName}
+                     hasError={this.state.errors.username  && true}
+                     error={this.state.errors.username } 
                    />
-                   <div className="invalid-feedback">
-                      {this.state.errors.displayName}
-                   </div>
                 </div>
                 <div className="col-12 mb-3">
-                   <label>Username</label>
-                   <input 
+                <Input
+                     label="Password"  
                      className="form-control"  
-                      placeholder="Your username"
-                      value={this.state.username}
-                      onChange={this.onChangeUserName}
-                    />
+                     placeholder="Your password" 
+                     type="password"
+                     state={this.state.password}
+                     onChange={this.onChangePassword}
+                     hasError={this.state.errors.password && true}
+                     error={this.state.errors.password } 
+                 />
                 </div>
                 <div className="col-12 mb-3">
-                   <label>Password</label>
-                   <input 
+                  <Input
+                     label="Password Repeat"  
                      className="form-control"  
-                      placeholder="Your password" 
-                      type="password"
-                      state={this.state.password}
-                      onChange={this.onChangePassword}
-                    />
-                </div>
-                <div className="col-12 mb-3">
-                   <label>Password Repeat</label>
-                   <input 
-                     className="form-control"  
-                      placeholder="Repeat your password" 
-                      type="password"
-                      state={this.state.passwordRepeat}
-                      onChange={this.onChangePasswordRepeat}
-                    />
+                     placeholder="Repeat your password" 
+                     type="password"
+                     state={this.state.passwordRepeat}
+                     onChange={this.onChangePasswordRepeat}
+                     hasError={this.state.errors.passwordRepeat  && true}
+                     error={this.state.errors.passwordRepeat } 
+                   />
                 </div>
                 <div className="text-center">
                     <button 
@@ -102,7 +109,7 @@ export class UserSignupPage extends React.Component {
                       disabled={this.state.pendingApiCall}
                     >
                       {this.state.pendingApiCall && (
-                        <div className="spinner-border text-lighter spinner-border-sm mr-sm-1" role="status">
+                        <div className="spinner-border text-light spinner-border-sm mr-1">
                           <span className="sr-only">Loading...</span>    
                         </div>
                       )}    
