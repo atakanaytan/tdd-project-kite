@@ -2,12 +2,18 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import authReducer from '../redux/AuthReducer';
 
 const setup = (path) => {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />    
-    </MemoryRouter>
+  const store = createStore(authReducer);
+  return render(  
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />    
+      </MemoryRouter>
+    </Provider>
   );
 };
 
