@@ -4,7 +4,7 @@ import TopBar from './TopBar';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import authReducer from '../redux/AuthReducer';
+import authReducer from '../redux/authReducer';
 
 const loggedInState = {
   id: 1,
