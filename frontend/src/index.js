@@ -10,16 +10,7 @@ import { createStore, applyMiddleware } from 'redux';
 import authReducer from './redux/AuthReducer';
 import logger from 'redux-logger';
 
-const loggedInState = {
-  id: 1,
-  username: 'user1',
-  displayName: 'display1',
-  image: 'profile1.png',
-  password: 'P4ssword',
-  isLoggedIn: true 
-};
-
-const store = createStore(authReducer, loggedInState, applyMiddleware(logger));
+const store = createStore(authReducer, applyMiddleware(logger));
 
 ReactDOM.render(
   <Provider store={store}>
