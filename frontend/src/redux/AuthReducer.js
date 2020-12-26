@@ -9,6 +9,9 @@ const initialState = {
 
 
 export default function authReducer(state = initialState, action) {
+  if (action.type === 'logout-success') {
+    return {...initialState};
+  }
   return state;
 }
 
