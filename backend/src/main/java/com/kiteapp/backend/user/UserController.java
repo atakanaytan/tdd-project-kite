@@ -5,7 +5,9 @@ import javax.validation.Valid;
 
 import com.kiteapp.backend.error.ApiError;
 import com.kiteapp.backend.shared.GenericResponse;
+import com.kiteapp.backend.user.user.UserVM;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -16,15 +18,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/1.0")
 public class UserController {
 
     @Autowired
     UserService userService;
 
-    @PostMapping("/api/1.0/users")
+    @PostMapping("/users")
     GenericResponse createUser(@Valid @RequestBody User user) {
         userService.save(user);
         return new GenericResponse("User Saved");
+    }
+
+    @GetMapping("/users")
+    Page<UserVM> getUsers() {
+        return userService.getUsers().map((user) -> new UserVM(user));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})

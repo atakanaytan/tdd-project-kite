@@ -1,7 +1,7 @@
 package com.kiteapp.backend.user;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.kiteapp.backend.shared.CurrentUser;
+import com.kiteapp.backend.user.user.UserVM;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
 
     @PostMapping("/api/1.0/login")
-    @JsonView(Views.Base.class)
-    User handleLogin(@CurrentUser User loggedInUser) {
-        return loggedInUser;
+    UserVM handleLogin(@CurrentUser User loggedInUser) {
+        return new UserVM(loggedInUser);
     }
 }

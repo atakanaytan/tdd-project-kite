@@ -1,6 +1,5 @@
 package com.kiteapp.backend.user;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.kiteapp.backend.UniqueUsername;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,18 +21,15 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue
-    @JsonView(Views.Base.class)
     private long id;
 
     @NotBlank(message = "{user.username.NotBlank}")
     @Size(min = 8, max = 255, message = "{user.username.Size}")
     @UniqueUsername
-    @JsonView(Views.Base.class)
     private String username;
 
     @NotBlank(message = "{user.displayname.NotBlank}")
     @Size(min = 8, max = 255, message = "{user.displayname.Size}")
-    @JsonView(Views.Base.class)
     private String displayName;
 
 
@@ -42,7 +38,6 @@ public class User implements UserDetails {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message="{user.password.Pattern}")
     private String password;
 
-    @JsonView(Views.Base.class)
     private String image;
 
     @Override
