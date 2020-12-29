@@ -4,10 +4,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.kiteapp.backend.error.ApiError;
+import com.kiteapp.backend.shared.CurrentUser;
 import com.kiteapp.backend.shared.GenericResponse;
 import com.kiteapp.backend.user.user.UserVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -31,8 +33,8 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    Page<UserVM> getUsers() {
-        return userService.getUsers().map((user) -> new UserVM(user));
+    Page<UserVM> getUsers(@CurrentUser User loggedInUser, Pageable page) {
+        return userService.getUsers(loggedInUser, page).map((user) -> new UserVM(user));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
