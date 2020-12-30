@@ -5,6 +5,15 @@ import App from './App';
 import { Provider } from 'react-redux';
 import configureStore from '../redux/configureStore';
 import axios from 'axios';
+import * as apiCalls from '../api/apiCalls';
+
+apiCalls.listUsers = jest.fn().mockResolvedValue({
+  data: {
+    content: [],
+    number: 0,
+    size: 3
+  }
+});
 
 beforeEach(() => {
   localStorage.clear();
@@ -274,3 +283,5 @@ describe('App', () => {
     });
 
   });
+
+  console.error = () => {};
