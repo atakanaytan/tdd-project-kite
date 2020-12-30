@@ -18,3 +18,10 @@ export const setAuthorizationHeader = ({username, password, isLoggedIn}) => {
     delete axios.defaults.headers.common['Authorization'];
   }
 };
+
+export const listUsers = (param = {page: 0, size: 3}) => {
+  const pageHasValueOrDefault = (param.page || 0);
+  const sizeHasValueOrDefault = (param.size || 3);
+  const path = `/api/1.0/users?page=${pageHasValueOrDefault}&size=${sizeHasValueOrDefault}`;
+  return axios.get(path);
+}
