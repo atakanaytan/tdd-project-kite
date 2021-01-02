@@ -1,5 +1,6 @@
 package com.kiteapp.backend.user;
 
+import com.kiteapp.backend.error.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,5 +28,13 @@ public class UserService {
             return userRepository.findByUsernameNot(loggedInUser.getUsername(), pageable);
         }
         return userRepository.findAll(pageable);
+    }
+
+    public User getByUsername(String username) {
+        User inDB =  userRepository.findByUsername(username);
+        if (inDB == null){
+            throw new NotFoundException(username + " not found");
+        }
+        return inDB;
     }
 }
