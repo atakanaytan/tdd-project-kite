@@ -7,21 +7,35 @@ class UserPage extends React.Component{
   state = {
     user: undefined,
     userNotFound: false
-  }
+  };
 
   componentDidMount() {
+    this.loadUser();  
+  };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.username !== this.props.match.params.username) {
+       this.loadUser();
+    } 
+  };
+
+  loadUser = () => {
     const username = this.props.match.params.username;
     if (!username) {
         return;
     }
-    apiCalls.getUser(username).then((response) => {
-      this.setState({ user: response.data });  
-    }).catch(error => {
+    this.setState({ userNotFound: false });
+    apiCalls
+      .getUser(username)
+      .then((response) => {
+        this.setState({ user: response.data });  
+    })
+    .catch(error => {
         this.setState({
           userNotFound: true  
         })
-    })
-  };
+    })  
+  } 
 
   render() {
     if (this.state.userNotFound) {
