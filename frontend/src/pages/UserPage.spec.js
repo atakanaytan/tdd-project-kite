@@ -44,7 +44,7 @@ describe('UserPage', () => {
       expect(text).toBeInTheDocument();    
     });
     it('displays not found alert when user not found', async() => {
-      apiCalls.getUser = jest.fn().mockRejectValue(mockFailGetUser);
+      apiCalls.getUser = jest.fn().mockRejectedValue(mockFailGetUser);
       const { queryByText } = setup({ match });
       const alert = await waitForElement(() => queryByText('User not found'));
       expect(alert).toBeInTheDocument();    
@@ -53,12 +53,12 @@ describe('UserPage', () => {
   describe('Lifecycle', () => {
     it('calls getUser when it is rendered', () => {
       apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
-      setup(match);
+      setup({match});
       expect(apiCalls.getUser).toBeCalledTimes(1);    
     });
     it('calls getUser for user1 when it is rendered with user1 in match', () => {
       apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
-      setup(match);
+      setup({match});
       expect(apiCalls.getUser).toBeCalledWith('user1');    
     });
   });
