@@ -1,6 +1,7 @@
 package com.kiteapp.backend.user;
 
 import com.kiteapp.backend.error.NotFoundException;
+import com.kiteapp.backend.user.user.UserUpdateVM;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,8 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         super();
@@ -36,5 +37,11 @@ public class UserService {
             throw new NotFoundException(username + " not found");
         }
         return inDB;
+    }
+
+    public User update(long id, UserUpdateVM userUpdate) {
+        User inDB = userRepository.getOne(id);
+        inDB.setDisplayName(userUpdate.getDisplayName());
+        return userRepository.save(inDB);
     }
 }
