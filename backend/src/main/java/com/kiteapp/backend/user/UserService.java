@@ -1,7 +1,7 @@
 package com.kiteapp.backend.user;
 
 import com.kiteapp.backend.error.NotFoundException;
-import com.kiteapp.backend.user.user.UserUpdateVM;
+import com.kiteapp.backend.user.viewModel.UserUpdateVM;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;

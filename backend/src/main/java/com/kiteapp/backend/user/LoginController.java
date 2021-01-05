@@ -1,7 +1,7 @@
 package com.kiteapp.backend.user;
 
 import com.kiteapp.backend.shared.CurrentUser;
-import com.kiteapp.backend.user.user.UserVM;
+import com.kiteapp.backend.user.viewModel.UserVM;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
