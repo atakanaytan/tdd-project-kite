@@ -1,15 +1,16 @@
 import React from 'react';
 import * as apiCalls from '../api/apiCalls';
 import ProfileCard from '../components/ProfileCard';
+import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-
 
 class UserPage extends React.Component{
   state = {
     user: undefined,
     userNotFound: false,
-    isLoadingUser: false
+    isLoadingUser: false,
+    inEditMode: false
   };
 
   componentDidMount() {
@@ -21,6 +22,18 @@ class UserPage extends React.Component{
        this.loadUser();
     } 
   };
+  
+  onClickEdit = () => {
+    this.setState({
+      inEditMode: true
+    })
+  }
+
+  onClickCancel = () => {
+    this.setState({
+      inEditMode: false
+    })
+  }
 
   loadUser = () => {
     const username = this.props.match.params.username;
@@ -64,7 +77,17 @@ class UserPage extends React.Component{
         </div>  
       );
     } else {
-      pageContent = this.state.user && <ProfileCard user={this.state.user} />; 
+      const isEditable = 
+        this.props.loggedInUser.username === this.props.match.params.username;
+      pageContent = this.state.user && (
+        <ProfileCard 
+          user={this.state.user} 
+          isEditable={isEditable}   
+          inEditMode= {this.state.inEditMode}
+          onClickEdit={this.onClickEdit}
+          onClickCancel={this.onClickCancel}
+        />
+      ); 
     }  
     return <div data-testid="userpage">{pageContent}</div>
   }
@@ -78,4 +101,10 @@ UserPage.defaultProps = {
   }  
 }
 
-export default UserPage;
+const mapStateToProps = (state) => {
+  return {
+    loggedInUser: state
+  }
+}
+
+export default connect(mapStateToProps)(UserPage);
