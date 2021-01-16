@@ -3,6 +3,7 @@ import ProfileImageWithDefault from './ProfileImageWithDefault';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserEdit, faSave, faWindowClose } from '@fortawesome/free-solid-svg-icons'
 import Input from './Input';
+import ButtonWithProgress from './ButtonWithProgress';
 
 const ProfileCard = (props) => {
   const { displayName, username, image } = props.user;
@@ -40,19 +41,26 @@ const ProfileCard = (props) => {
          )}
          {props.inEditMode && (
            <div>
-             <button 
-               className="btn btn-primary" onClick={props.onClickSave}>
-                 <FontAwesomeIcon 
-                    icon={faSave}
-                 /> Save
-              </button>
+             <ButtonWithProgress 
+                className="btn btn-primary" 
+                onClick={props.onClickSave}
+                text={
+                  <span>
+                    <FontAwesomeIcon icon={faSave}/> Save
+                  </span>
+                }
+                pendingApiCall={props.pendingUpdateCall}
+                disabled={props.pendingUpdateCall}
+              />
               <button 
                  className="btn btn-outline-secondary ml-1" 
-                 onClick={props.onClickCancel}>
-                   <FontAwesomeIcon 
-                     icon={faWindowClose}
-                   /> Cancel
-               </button>
+                 onClick={props.onClickCancel}
+                 disabled={props.pendingUpdateCall}
+               > 
+                 <FontAwesomeIcon 
+                   icon={faWindowClose}
+                /> Cancel
+              </button>
            </div>
          )}  
        </div>   
