@@ -35,6 +35,31 @@ class UserPage extends React.Component{
     })
   }
 
+  onClickCancel = () => {
+   this.setState({
+     inEditMode: false
+   });
+  };
+
+  onClickSave = () => {
+    const userId = this.props.loggedInUser.id;
+    const userUpdate = {
+      displayName: this.state.user.displayName
+    }
+    apiCalls.updateUser(userId, userUpdate)
+      .then(response => {
+        this.setState({
+          inEditMode: false
+        });
+      });
+  };
+
+  onChangeDisplayName = (event) => {
+    const user = { ...this.state.user };
+    user.displayName = event.target.value;
+    this.setState({user});
+  }
+
   loadUser = () => {
     const username = this.props.match.params.username;
     if (!username) {
@@ -86,6 +111,8 @@ class UserPage extends React.Component{
           inEditMode= {this.state.inEditMode}
           onClickEdit={this.onClickEdit}
           onClickCancel={this.onClickCancel}
+          onClickSave={this.onClickSave}
+          onChangeDisplayName={this.onChangeDisplayName} 
         />
       ); 
     }  

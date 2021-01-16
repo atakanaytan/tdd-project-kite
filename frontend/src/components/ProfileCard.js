@@ -26,7 +26,8 @@ const ProfileCard = (props) => {
            <div className="mb-2">
              <Input 
                value={displayName} 
-               label={`Change Display Name for ${username}`}   
+               label={`Change Display Name for ${username}`}
+               onChange={props.onChangeDisplayName}   
               />
            </div>
           )}
@@ -40,7 +41,7 @@ const ProfileCard = (props) => {
          {props.inEditMode && (
            <div>
              <button 
-               className="btn btn-primary">
+               className="btn btn-primary" onClick={props.onClickSave}>
                  <FontAwesomeIcon 
                     icon={faSave}
                  /> Save
