@@ -1,6 +1,7 @@
 package com.kiteapp.backend;
 
 
+import com.kiteapp.backend.configuration.AppConfiguration;
 import com.kiteapp.backend.error.ApiError;
 import com.kiteapp.backend.shared.GenericResponse;
 import com.kiteapp.backend.user.User;
@@ -9,6 +10,7 @@ import com.kiteapp.backend.user.UserService;
 import com.kiteapp.backend.user.viewModel.UserVM;
 import com.kiteapp.backend.user.viewModel.UserUpdateVM;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +50,9 @@ public class UserControllerTest {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    AppConfiguration appConfiguration;
 
     private static final String API_1_0_USERS = "/api/1.0/users";
 
@@ -447,19 +452,40 @@ public class UserControllerTest {
         User user = userService.save(TestUtil.createValidUser("user1"));
         authenticate(user.getUsername());
 
-        String fileName = "profile.png";
-        File imageResource = new ClassPathResource("profile.png").getFile();
-
         UserUpdateVM updatedUser = createValidUserUpdateVM();
-
-        byte[] imageArr = FileUtils.readFileToByteArray(imageResource);
-        String imageString = Base64.getEncoder().encodeToString(imageArr);
+        String imageString = readFileToBase64("profile.png");
         updatedUser.setImage(imageString);
 
         HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
         ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
 
         assertThat(response.getBody().getImage()).isNotEqualTo("profile-image.png");
+    }
+
+    @Test
+    public void putUser_withValidRequestBodyWithSupportedImageFromAuthorizedUser_imageIsStoredUnderProfileFolder() throws IOException {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        UserUpdateVM updatedUser = createValidUserUpdateVM();
+        String imageString = readFileToBase64("profile.png");
+        updatedUser.setImage(imageString);
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
+
+        String storedImageName = response.getBody().getImage();
+
+        String profilePicturePath = appConfiguration.getFullProfileImagesPath() + "/" + storedImageName;
+        File storedImage = new File(profilePicturePath);
+        assertThat(storedImage.exists()).isTrue();
+    }
+
+    private String readFileToBase64(String fileName) throws IOException{
+        ClassPathResource imageResource = new ClassPathResource(fileName);
+        byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
+        String imageString = Base64.getEncoder().encodeToString(imageArr);
+        return imageString;
     }
 
     private UserUpdateVM createValidUserUpdateVM() {
@@ -493,5 +519,11 @@ public class UserControllerTest {
     public <T> ResponseEntity<T> putUser(long id, HttpEntity<?> requestEntity, Class<T> responseType) {
         String path = API_1_0_USERS + "/" + id;
         return testRestTemplate.exchange(path, HttpMethod.PUT, requestEntity, responseType);
+    }
+
+    @After
+    public void cleanDirectory () throws IOException {
+        FileUtils.cleanDirectory(new File(appConfiguration.getFullProfileImagesPath()));
+        FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
     }
 }
