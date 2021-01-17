@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +76,10 @@ public class StaticResourceTest {
         File target = new File(appConfiguration.getFullAttachmentsPath() + "/" + fileName);
         FileUtils.copyFile(source, target);
 
-        mockMvc.perform(get("/images/"+appConfiguration.getAttachmentsFolder()+"/"+fileName)).andExpect(status().isOk());
+        MvcResult result =  mockMvc.perform(get("/images/"+appConfiguration.getAttachmentsFolder()+"/"+fileName)).andReturn();
+
+        String cacheControl = result.getResponse().getHeaderValue("Cache-Control").toString();
+        assertThat(cacheControl).containsIgnoringCase("max-age=3153600");
     }
 
     @Test
