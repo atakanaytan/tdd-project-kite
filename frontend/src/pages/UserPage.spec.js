@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitForElement, fireEvent, waitForDomChange } from '@testing-library/react';
+import { render, waitForElement, fireEvent, waitForDomChange, waitFor } from '@testing-library/react';
 import UserPage from './UserPage';
 import * as apiCalls from '../api/apiCalls';
 import { Provider } from 'react-redux';
@@ -324,7 +324,59 @@ describe('UserPage', () => {
 
       expect(() => fireEvent.change(uploadInput, {target: { files: [] } } ))
         .not.toThrow();    
-    });  
+    });
+    it('calls updateUser api with request body having new image withouth data:image/png;base64', async () => {
+      const { queryByText, container } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockResolvedValue(mockSuccessUpdateUser);  
+      
+      const inputs = container.querySelectorAll('input');
+      const uploadInput = inputs[1];
+
+      const file = new File(['dummy content'], 'example.png', {
+        type: 'image/png'
+      });
+
+      fireEvent.change(uploadInput, { target: { files: [file] } });
+
+      await waitForDomChange();
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton); 
+
+      const requestBody = apiCalls.updateUser.mock.calls[0][1];
+      expect(requestBody.image).not.toContain('data:image/png;base64');    
+    });
+    it('returns to last updated image when image is change for another time but cancelled', async () => {
+      const { queryByText, container } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockResolvedValue(mockSuccessUpdateUser);  
+      
+      const inputs = container.querySelectorAll('input');
+      const uploadInput = inputs[1];
+
+      const file = new File(['dummy content'], 'example.png', {
+        type: 'image/png'
+      });
+
+      fireEvent.change(uploadInput, { target: { files: [file] } });
+
+      await waitForDomChange();
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton); 
+
+      const editButtonAfterClickingSave = await waitForElement(() => 
+        queryByText('Edit')
+      );
+      
+      const newFile = new File(['another content'], 'example2.png', {
+        type: 'image/png'
+      });
+
+      fireEvent.change(uploadInput, { target: { files: [newFile] } });
+
+      const cancelButton = queryByText('Cancel');
+      fireEvent.click(cancelButton);
+      const image = container.querySelector('img');
+      expect(image.src).toContain('/images/profile/profile1-update.png');
+    });   
   });
 })
 
