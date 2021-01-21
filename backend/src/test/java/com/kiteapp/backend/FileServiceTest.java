@@ -46,7 +46,6 @@ public class FileServiceTest {
         assertThat(fileType).isEqualToIgnoringCase("image/png");
     }
 
-
     @After
     public void cleanup() throws IOException {
         FileUtils.cleanDirectory(new File(appConfiguration.getFullProfileImagesPath()));

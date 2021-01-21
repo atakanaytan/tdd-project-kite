@@ -1,5 +1,6 @@
 package com.kiteapp.backend.user.viewModel;
 
+import com.kiteapp.backend.shared.ProfileImage;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -12,5 +13,7 @@ public class UserUpdateVM {
     @Size(min=4, max=255)
     private String displayName;
 
+    @ProfileImage
     private String image;
+
 }
