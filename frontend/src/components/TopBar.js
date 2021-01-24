@@ -2,6 +2,7 @@ import React from 'react';
 import logo from '../assets/kite-logo.png';
 import { Link } from 'react-router-dom'; 
 import { connect } from 'react-redux';
+import ProfileImageWithDefault from './ProfileImageWithDefault';
 
 class TopBar extends React.Component {
 
@@ -30,9 +31,22 @@ class TopBar extends React.Component {
       if (this.props.user.isLoggedIn) {
         links = (
           <ul className="nav navbar-nav ml-auto">
-            <li className="nav-item nav-link" onClick={this.onClickLogout} style={{
-              cursor: 'pointer'
-            }}>Logout</li> 
+            <li className="nav-item nav-link">
+              <ProfileImageWithDefault 
+                className="rounded-circle"
+                width="32"
+                height="32"
+                image={this.props.user.image} />
+              {this.props.user.displayName}</li> 
+            <li
+              className="nav-item nav-link" 
+              onClick={this.onClickLogout} 
+              style={{
+                cursor: 'pointer'
+              }}
+            > 
+              Logout
+            </li> 
             <li className="nav-item">
               <Link to={`/${this.props.user.username}`} className="nav-link">
                 My Profile
