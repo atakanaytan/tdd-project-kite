@@ -23,17 +23,17 @@ public class User implements UserDetails {
     private long id;
 
     @NotBlank(message = "{user.username.NotBlank}")
-    @Size(min = 8, max = 255, message = "{user.username.Size}")
+    @Size(min = 4, max=255)
     @UniqueUsername
     private String username;
 
     @NotBlank(message = "{user.displayname.NotBlank}")
-    @Size(min = 8, max = 255, message = "{user.displayname.Size}")
+    @Size(min = 4, max=255)
     private String displayName;
 
 
     @NotBlank(message = "{user.password.NotBlank}")
-    @Size(min = 8, max = 255, message = "{user.password.Size}")
+    @Size(min = 8, max=255)
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message="{user.password.Pattern}")
     private String password;
 
