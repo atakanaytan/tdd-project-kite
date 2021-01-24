@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitForElement, fireEvent, waitForDomChange, waitFor } from '@testing-library/react';
+import { render, waitForElement, fireEvent, waitForDomChange } from '@testing-library/react';
 import UserPage from './UserPage';
 import * as apiCalls from '../api/apiCalls';
 import { Provider } from 'react-redux';
@@ -35,7 +35,10 @@ const mockFailGetUser = {
 const mockFailUpdateUser = {
   response: {
     data: {
-
+      validationErrors: {
+        displayName: 'The length should be between 4 and 255 characters.',
+        image: 'Only PNG and JPG files are allowed.'
+      }
     }
   }
 }
@@ -365,6 +368,7 @@ describe('UserPage', () => {
       const editButtonAfterClickingSave = await waitForElement(() => 
         queryByText('Edit')
       );
+      fireEvent.click(editButtonAfterClickingSave);
       
       const newFile = new File(['another content'], 'example2.png', {
         type: 'image/png'
@@ -376,7 +380,81 @@ describe('UserPage', () => {
       fireEvent.click(cancelButton);
       const image = container.querySelector('img');
       expect(image.src).toContain('/images/profile/profile1-update.png');
-    });   
+    });
+    it('displays validation errors for displayName when update api fails', async () => {
+      const { queryByText } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+      
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton);
+      await waitForDomChange();
+
+      const errorMessage = queryByText(
+        'The length should be between 4 and 255 characters.'
+      );
+      expect(errorMessage).toBeInTheDocument();
+    });
+    it('shows validation error for file when update api fails', async () => {
+      const { queryByText } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+      
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton);
+      await waitForDomChange();
+
+      const errorMessage = queryByText(
+        'Only PNG and JPG files are allowed.'
+      );
+      expect(errorMessage).toBeInTheDocument();
+    });
+    it('removes validation error for displayName when user changes the displayName', async () => {
+      const { queryByText, container } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+      
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton);
+      await waitForDomChange();
+      const displayInput = container.querySelectorAll('input')[0];
+      fireEvent.change(displayInput, { target: { value: 'new-display-name'} });  
+
+      const errorMessage = queryByText(
+        'The length should be between 4 and 255 characters.'
+      );
+      expect(errorMessage).not.toBeInTheDocument();
+    });
+    it('removes validation error for file when user changes the file', async () => {
+      const { queryByText, container } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+      
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton);
+      await waitForDomChange();
+      const fileInput = container.querySelectorAll('input')[1];
+
+      const newFile = new File(['another content'], 'example2.png', {
+        type: 'image/png'
+      });
+      fireEvent.change(fileInput, { target: { files: [newFile] } });  
+      await waitForDomChange();
+    
+      const errorMessage = queryByText('Only PNG and JPG files are allowed.');
+      expect(errorMessage).not.toBeInTheDocument();
+    });
+    it('removes validation error if user cancels', async () => {
+      const { queryByText } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+      
+      const saveButton = queryByText('Save');
+      fireEvent.click(saveButton);
+      await waitForDomChange();
+      fireEvent.click(queryByText('Cancel'));
+    
+      fireEvent.click(queryByText('Edit'));
+      const errorMessage = queryByText(
+        'The length should be between 4 and 255 characters.'
+      );
+      expect(errorMessage).not.toBeInTheDocument();
+    });    
   });
 })
 
