@@ -1,5 +1,6 @@
 package com.kiteapp.backend;
 
+import com.kiteapp.backend.kite.Kite;
 import com.kiteapp.backend.user.User;
 
 public class TestUtil {
@@ -18,4 +19,11 @@ public class TestUtil {
         user.setUsername(username);
         return user;
     }
+
+    public static Kite createValidKite() {
+        Kite kite = new Kite();
+        kite.setContent("test content for the test kites");
+        return kite;
+    }
+
 }
