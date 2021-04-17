@@ -70,7 +70,13 @@ class UserPage extends React.Component{
           originalDisplayName: undefined,
           pendingUpdateCall: false,
           user,
-          image: undefined
+          image: undefined,
+        }, () => {
+            const action = {
+              type: 'update-success',
+              payload: user
+            }
+            this.props.dispatch(action);
         });
       })
       .catch((error) => {
@@ -138,7 +144,7 @@ class UserPage extends React.Component{
     if (this.state.isLoadingUser) {
       pageContent = (
         <div className="d-flex">
-          <div className="spinner-border text-black-50 m-auto">
+          <div className="spinner-border text-black-50 m- o">
             <span className="sr-only">Loading...</span>
           </div>
         </div>        
