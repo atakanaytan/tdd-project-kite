@@ -2,6 +2,7 @@ package com.kiteapp.backend;
 
 import com.kiteapp.backend.error.ApiError;
 import com.kiteapp.backend.kite.Kite;
+import com.kiteapp.backend.kite.KiteRepository;
 import com.kiteapp.backend.user.UserRepository;
 import com.kiteapp.backend.user.UserService;
 import org.junit.Before;
@@ -16,7 +17,10 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,14 +40,18 @@ public class KiteControllerTest {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    KiteRepository kiteRepository;
+
     @Before
     public void cleanUp() {
+        kiteRepository.deleteAll();
         userRepository.deleteAll();
         testRestTemplate.getRestTemplate().getInterceptors().clear();
     }
 
     @Test
-    public void postKite_whenHoaxIsValidAndUserIsAuthorized_receiveOk() {
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_receiveOk() {
         userService.save(TestUtil.createValidUser("user1"));
         authenticate("user1");
         Kite kite = TestUtil.createValidKite();
@@ -52,17 +60,86 @@ public class KiteControllerTest {
     }
 
     @Test
-    public void postKite_whenHoaxIsValidAndUserIsUnauthorized_receiveUnauthorized() {
+    public void postKite_whenKiteIsValidAndUserIsUnauthorized_receiveUnauthorized() {
         Kite kite = TestUtil.createValidKite();
         ResponseEntity<Object> response = postKite(kite, Object.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    public void postKite_whenHoaxIsValidAndUserIsUnauthorized_receiveApiError() {
+    public void postKite_whenKiteIsValidAndUserIsUnauthorized_receiveApiError() {
         Kite kite = TestUtil.createValidKite();
         ResponseEntity<ApiError> response = postKite(kite, ApiError.class);
         assertThat(Objects.requireNonNull(response.getBody()).getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_kiteSavedToDatabase() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = TestUtil.createValidKite();
+        postKite(kite, Object.class);
+        assertThat(kiteRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_kiteSavedToDatabaseWithTimestamp() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = TestUtil.createValidKite();
+        postKite(kite, Object.class);
+        assertThat(kiteRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void postKite_whenKiteContentNullAndUserIsAuthorized_receiveBadRequest() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = new Kite();
+        ResponseEntity<Object> response = postKite(kite, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postKite_whenKiteContentLessThan10CharactersAndUserIsAuthorized_receiveBadRequest() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = new Kite();
+        kite.setContent("123456789");
+        ResponseEntity<Object> response = postKite(kite, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postKite_whenKiteContentIs5000CharactersAndUserIsAuthorized_receiveOk() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = new Kite();
+        String longContent = IntStream.rangeClosed(1, 5000).mapToObj(i -> "x").collect(Collectors.joining());
+        kite.setContent(longContent);
+        ResponseEntity<Object> response = postKite(kite, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void postKite_whenKiteContentMoreThan5000CharactersAndUserIsAuthorized_receiveBadRequest() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = new Kite();
+        String longContent = IntStream.rangeClosed(1, 5001).mapToObj(i -> "x").collect(Collectors.joining());
+        kite.setContent(longContent);
+        ResponseEntity<Object> response = postKite(kite, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postKite_whenKiteContentNullAndUserIsAuthorized_receiveApiErrorWithValidationErrors() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = new Kite();
+        ResponseEntity<ApiError> response = postKite(kite, ApiError.class);
+        Map<String, String> validationErrors = response.getBody().getValidationErrors();
+        assertThat(validationErrors.get("content")).isNotNull();
     }
 
     private <T> ResponseEntity<T> postKite(Kite kite, Class<T> responseType) {
