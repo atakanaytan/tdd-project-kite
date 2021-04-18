@@ -1,5 +1,6 @@
 package com.kiteapp.backend.kite;
 
+import com.kiteapp.backend.user.User;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -22,4 +23,7 @@ public class Kite {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
+
+    @ManyToOne
+    private User user;
 }

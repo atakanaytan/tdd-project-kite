@@ -1,5 +1,6 @@
 package com.kiteapp.backend.kite;
 
+import com.kiteapp.backend.user.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -13,8 +14,9 @@ public class KiteService {
         this.kiteRepository = kiteRepository;
     }
 
-    public void save(Kite kite) {
+    public void save(User user, Kite kite) {
         kite.setTimestamp(new Date());
+        kite.setUser(user);
         kiteRepository.save(kite);
     }
 

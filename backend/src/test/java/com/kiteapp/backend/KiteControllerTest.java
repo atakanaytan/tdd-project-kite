@@ -3,8 +3,10 @@ package com.kiteapp.backend;
 import com.kiteapp.backend.error.ApiError;
 import com.kiteapp.backend.kite.Kite;
 import com.kiteapp.backend.kite.KiteRepository;
+import com.kiteapp.backend.user.User;
 import com.kiteapp.backend.user.UserRepository;
 import com.kiteapp.backend.user.UserService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +19,9 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -43,11 +48,19 @@ public class KiteControllerTest {
     @Autowired
     KiteRepository kiteRepository;
 
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
+
     @Before
     public void cleanUp() {
         kiteRepository.deleteAll();
         userRepository.deleteAll();
         testRestTemplate.getRestTemplate().getInterceptors().clear();
+    }
+
+    @After
+    public void cleanupAfter() {
+        kiteRepository.deleteAll();
     }
 
     @Test
@@ -140,6 +153,31 @@ public class KiteControllerTest {
         ResponseEntity<ApiError> response = postKite(kite, ApiError.class);
         Map<String, String> validationErrors = response.getBody().getValidationErrors();
         assertThat(validationErrors.get("content")).isNotNull();
+    }
+
+    @Test
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_kiteSavedToDatabaseWithAuthenticatedUserInfo() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = TestUtil.createValidKite();
+        postKite(kite, Object.class);
+
+        Kite inDB = kiteRepository.findAll().get(0);
+
+        assertThat(inDB.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_kiteCanBeAccessedFromUserEntity() {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = TestUtil.createValidKite();
+        postKite(kite, Object.class);
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        User inDBUser = entityManager.find(User.class, user.getId());
+        assertThat(inDBUser.getKites().size()).isEqualTo(1);
     }
 
     private <T> ResponseEntity<T> postKite(Kite kite, Class<T> responseType) {
