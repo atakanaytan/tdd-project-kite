@@ -68,6 +68,15 @@ describe('apiCalls', () => {
       apiCalls.updateUser('5');
       const path = mockUpdateUser.mock.calls[0][0];
       expect(path).toBe('/api/1.0/users/5');
-    })
-  })
+    });
+  });
+  describe('postKites', () => {
+    it('calls /api/1.0/kites', () => {
+      const mockPostKite = jest.fn();
+      axios.post = mockPostKite;
+      apiCalls.postKite();
+      const path = mockPostKite.mock.calls[0][0];
+      expect(path).toBe('/api/1.0/kites');
+    });
+  });
 });
