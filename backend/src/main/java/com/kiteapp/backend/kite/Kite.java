@@ -16,7 +16,7 @@ public class Kite {
     @GeneratedValue
     private long id;
 
-    @NotNull
+    @NotNull(message = "Cannot be null")
     @Size(min = 10, max = 5000)
     @Column(length = 5000)
     private String content;

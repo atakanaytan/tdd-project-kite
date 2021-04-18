@@ -273,5 +273,92 @@ describe('KiteSubmit', () => {
             fireEvent.focus(textArea);
             expect(queryByText('Kite')).not.toBeDisabled();
         });
+        it('displays validation error for content', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce({
+                response: {
+                    data: {
+                        validationErrors: {
+                            content: 'It must have minimum 10 and maximum 5000 characters'
+                        }
+                    }
+                }
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+
+            expect(
+                queryByText('It must have minimum 10 and maximum 5000 characters')
+            ).toBeInTheDocument();
+        });
+        it('clears validation error after clicking cancel', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce({
+                response: {
+                    data: {
+                        validationErrors: {
+                            content: 'It must have minimum 10 and maximum 5000 characters'
+                        }
+                    }
+                }
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+            fireEvent.click(queryByText('Cancel'));
+
+            expect(
+                queryByText('It must have minimum 10 and maximum 5000 characters')
+            ).not.toBeInTheDocument();
+        });
+        it('clears validation error after content is changed', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce({
+                response: {
+                    data: {
+                        validationErrors: {
+                            content: 'It must have minimum 10 and maximum 5000 characters'
+                        }
+                    }
+                }
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+            fireEvent.change(textArea, {
+                target: { value: 'Test kite content updated' }
+            });
+
+            expect(
+                queryByText('It must have minimum 10 and maximum 5000 characters')
+            ).not.toBeInTheDocument();
+        });
     });
 });
+
+console.error = () => {};
