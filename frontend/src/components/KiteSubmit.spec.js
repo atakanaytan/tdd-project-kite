@@ -103,7 +103,7 @@ describe('KiteSubmit', () => {
                 content: 'Test kite content'
             });
         });
-        it('returns back to unfocused state after successful postKite action', async() => {
+        it('returns back to unfocused state after successful postKite action', async () => {
             const { container, queryByText } = setup();
             const textArea = container.querySelector('textarea');
             fireEvent.focus(textArea);
@@ -118,7 +118,7 @@ describe('KiteSubmit', () => {
 
             expect(queryByText('Kite')).not.toBeInTheDocument();
         });
-        it('clear content after successful postKite action', async() => {
+        it('clear content after successful postKite action', async () => {
             const { container, queryByText } = setup();
             const textArea = container.querySelector('textarea');
             fireEvent.focus(textArea);
@@ -140,8 +140,138 @@ describe('KiteSubmit', () => {
             fireEvent.change(textArea, { target: { value: 'Test kite content' } });
             
             fireEvent.click(queryByText('Cancel'));
-            
+
             expect(queryByText('Test kite content')).not.toBeInTheDocument();
+        });
+        it('disables Kite button when there is postKite api call', () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({})
+                    }, 300)
+                });
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            fireEvent.click(kiteButton);
+            expect(mockFunction).toHaveBeenCalledTimes(1);
+        });
+        it('disables Cancel button when there is postKite api call', () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({})
+                    }, 300)
+                });
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            const cancelButton = queryByText('Cancel');
+            expect(cancelButton).toBeDisabled();
+        });
+        it('displays spinner when there is postKite api call', () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({})
+                    }, 300)
+                });
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            expect(queryByText('Loading...')).toBeInTheDocument();
+        });
+        it('enables Kite button when kite api call fails', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce({
+                response: {
+                    data: {
+                        validationErrors: {
+                            content: 'It must have minimum 10 and maximum 5000 characters'
+                        }
+                    }
+                }
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+
+            expect(queryByText('Kite')).not.toBeDisabled();
+        });
+        it('enables Cancel button when kite api call fails', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+            
+            const kiteButton = queryByText('Kite');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce({
+                response: {
+                    data: {
+                        validationErrors: {
+                            content: 'It must have minimum 10 and maximum 5000 characters'
+                        }
+                    }
+                }
+            });
+            
+            apiCalls.postKite = mockFunction;
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+
+            expect(queryByText('Cancel')).not.toBeDisabled();
+        });
+        it('enables Kite button after successful postKite action', async () => {
+            const { container, queryByText } = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, { target: { value: 'Test kite content' } });
+
+            const kiteButton = queryByText('Kite');
+
+            apiCalls.postKite = jest.fn().mockResolvedValue({});
+            fireEvent.click(kiteButton);
+
+            await waitForDomChange();
+            fireEvent.focus(textArea);
+            expect(queryByText('Kite')).not.toBeDisabled();
         });
     });
 });

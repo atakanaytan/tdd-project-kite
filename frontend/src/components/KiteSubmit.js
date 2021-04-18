@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import ProfileImageWithDefault from './ProfileImageWithDefault';
 import { connect } from 'react-redux';
 import * as apiCalls from '../api/apiCalls';
+import ButtonWithProgress from './ButtonWithProgress';
 
 class KiteSubmit extends Component {
     state = {
         focused: false,
-        content: undefined 
+        content: undefined,
+        pendingApiCall: false 
     };
 
     onChangeContent = (event) => {
@@ -18,12 +20,17 @@ class KiteSubmit extends Component {
         const body = {
             content: this.state.content
         }
+        this.setState({pendingApiCall: true})
         apiCalls.postKite(body).then((response) => {
             this.setState({
                 focused: false,
-                content: ''
+                content: '',
+                pendingApiCall: false
             });
-        });
+        })
+        .catch((error) => {
+            this.setState({ pendingApiCall: false });
+        })
     }
 
     onFocus = () => {
@@ -55,17 +62,22 @@ class KiteSubmit extends Component {
                   value={this.state.content}
                   onChange={this.onChangeContent}    
                 />
-                {this.state.focused && <div className="text-right mt-1">
-                  <button 
-                        className="btn btn-success" 
+                {this.state.focused && (
+                  <div className="text-right mt-1">
+                    <ButtonWithProgress 
+                        className="btn btn-success"
+                        disabled={this.state.pendingApiCall} 
                         onClick={this.onClickKite}
-                        >Kite</button>  
-                  <button 
+                        pendingApiCall={this.state.pendingApiCall}
+                        text="Kite"
+                    />
+                    <button 
                         className="btn btn-light ml-1" 
                         onClick={this.onClickCancel}
-                    >Cancel
-                  </button>
-                </div>}
+                        disabled={this.state.pendingApiCall}
+                     >Cancel
+                    </button>
+                </div>)}
               </div>
             </div>
         )
