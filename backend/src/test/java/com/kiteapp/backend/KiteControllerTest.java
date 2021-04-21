@@ -3,6 +3,8 @@ package com.kiteapp.backend;
 import com.kiteapp.backend.error.ApiError;
 import com.kiteapp.backend.kite.Kite;
 import com.kiteapp.backend.kite.KiteRepository;
+import com.kiteapp.backend.kite.KiteService;
+import com.kiteapp.backend.kite.vm.KiteVM;
 import com.kiteapp.backend.user.User;
 import com.kiteapp.backend.user.UserRepository;
 import com.kiteapp.backend.user.UserService;
@@ -13,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
@@ -47,6 +51,9 @@ public class KiteControllerTest {
 
     @Autowired
     KiteRepository kiteRepository;
+
+    @Autowired
+    KiteService kiteService;
 
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
@@ -178,6 +185,52 @@ public class KiteControllerTest {
 
         User inDBUser = entityManager.find(User.class, user.getId());
         assertThat(inDBUser.getKites().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void getKites_whenThereAreNoKites_receiveOk() {
+        ResponseEntity<Object> response = getKites(new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getKites_whenThereAreNoKites_receivePageWithZeroItems() {
+        ResponseEntity<TestPage<Object>> response = getKites(new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void getKites_whenThereAreKites_receivePageWithItems() {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        kiteService.save(user, TestUtil.createValidKite());
+        kiteService.save(user, TestUtil.createValidKite());
+        kiteService.save(user, TestUtil.createValidKite());
+
+        ResponseEntity<TestPage<Object>> response = getKites(new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    public void getKites_whenThereAreKites_receivePageWithKiteVM() {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        kiteService.save(user, TestUtil.createValidKite());
+
+        ResponseEntity<TestPage<KiteVM>> response = getKites(new ParameterizedTypeReference<TestPage<KiteVM>>() {});
+        KiteVM storedKite = response.getBody().getContent().get(0);
+        assertThat(storedKite.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void postKite_whenKiteIsValidAndUserIsAuthorized_receiveKiteVM() {
+        userService.save(TestUtil.createValidUser("user1"));
+        authenticate("user1");
+        Kite kite = TestUtil.createValidKite();
+        ResponseEntity<KiteVM> response = postKite(kite, KiteVM.class);
+        assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
+    }
+
+    private <T> ResponseEntity<T> getKites(ParameterizedTypeReference<T> responseType) {
+        return testRestTemplate.exchange(API_1_0_KITES, HttpMethod.GET, null, responseType);
     }
 
     private <T> ResponseEntity<T> postKite(Kite kite, Class<T> responseType) {

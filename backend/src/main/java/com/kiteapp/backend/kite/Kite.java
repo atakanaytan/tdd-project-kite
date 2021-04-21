@@ -1,5 +1,6 @@
 package com.kiteapp.backend.kite;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kiteapp.backend.user.User;
 import lombok.Data;
 
