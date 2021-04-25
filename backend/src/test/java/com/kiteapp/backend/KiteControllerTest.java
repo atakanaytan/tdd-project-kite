@@ -26,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -227,6 +228,68 @@ public class KiteControllerTest {
         Kite kite = TestUtil.createValidKite();
         ResponseEntity<KiteVM> response = postKite(kite, KiteVM.class);
         assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void getKitesOfUser_whenUserExist_receiveOk() {
+        userService.save(TestUtil.createValidUser("user1"));
+        ResponseEntity<Object> response = getKitesOfUser("user1", new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getKitesOfUser_whenUserDoesNotExist_receiveNotFound() {
+        ResponseEntity<Object> response = getKitesOfUser("unknown-user", new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void getKitesOfUser_whenUserExist_receivePageWithZeroKites() {
+        userService.save(TestUtil.createValidUser("user1"));
+        ResponseEntity<TestPage<Object>> response = getKitesOfUser("user1", new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void getKitesOfUser_whenUserExistWithKite_receivePageWithKiteVM() {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        kiteService.save(user, TestUtil.createValidKite());
+
+        ResponseEntity<TestPage<KiteVM>> response = getKitesOfUser("user1", new ParameterizedTypeReference<TestPage<KiteVM>>() {});
+        KiteVM storedKite = response.getBody().getContent().get(0);
+        assertThat(storedKite.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void getKitesOfUser_whenUserExistWithMultipleKites_receivePageWithMathcingKitesCount() {
+        User user = userService.save(TestUtil.createValidUser("user1"));
+        kiteService.save(user, TestUtil.createValidKite());
+        kiteService.save(user, TestUtil.createValidKite());
+        kiteService.save(user, TestUtil.createValidKite());
+
+        ResponseEntity<TestPage<KiteVM>> response = getKitesOfUser("user1", new ParameterizedTypeReference<TestPage<KiteVM>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    public void getKitesOfUser_whenMultipleUserExistWithMultipleKites_receivePageWithMatchingKitesCount() {
+        User userWithThreeKites = userService.save(TestUtil.createValidUser("user1"));
+        IntStream.rangeClosed(1, 3).forEach(i -> {
+            kiteService.save(userWithThreeKites, TestUtil.createValidKite());
+        });
+
+        User userWithFiveKites = userService.save(TestUtil.createValidUser("user2"));
+        IntStream.rangeClosed(1, 5).forEach(i -> {
+            kiteService.save(userWithFiveKites, TestUtil.createValidKite());
+        });
+
+        ResponseEntity<TestPage<Kite>> response = getKitesOfUser("user2", new ParameterizedTypeReference<TestPage<Kite>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(5);
+    }
+
+    private <T> ResponseEntity<T> getKitesOfUser(String username, ParameterizedTypeReference<T> responseType) {
+        String path = "/api/1.0/users/" + username + "/kites";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
     }
 
     private <T> ResponseEntity<T> getKites(ParameterizedTypeReference<T> responseType) {

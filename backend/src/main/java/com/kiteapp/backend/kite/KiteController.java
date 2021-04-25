@@ -26,4 +26,9 @@ public class KiteController {
     Page<KiteVM> getAllKites(Pageable pageable) {
         return kiteService.getAllKites(pageable).map(KiteVM::new);
     }
+
+    @GetMapping("/users/{username}/kites")
+    Page<KiteVM> getKitesOfUser(@PathVariable String username, Pageable pageable) {
+        return kiteService.getKitesOfUser(username, pageable).map(KiteVM::new);
+    }
 }
