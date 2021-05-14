@@ -261,7 +261,7 @@ public class KiteControllerTest {
     }
 
     @Test
-    public void getKitesOfUser_whenUserExistWithMultipleKites_receivePageWithMathcingKitesCount() {
+    public void getKitesOfUser_whenUserExistWithMultipleKites_receivePageWithMatchingKitesCount() {
         User user = userService.save(TestUtil.createValidUser("user1"));
         kiteService.save(user, TestUtil.createValidKite());
         kiteService.save(user, TestUtil.createValidKite());

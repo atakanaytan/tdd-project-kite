@@ -1,11 +1,12 @@
-import React from 'react';
-import * as apiCalls from '../api/apiCalls';
-import ProfileCard from '../components/ProfileCard';
-import { connect } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import React from "react";
+import * as apiCalls from "../api/apiCalls";
+import ProfileCard from "../components/ProfileCard";
+import { connect } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import KiteFeed from "../components/KiteFeed";
 
-class UserPage extends React.Component{
+class UserPage extends React.Component {
   state = {
     user: undefined,
     userNotFound: false,
@@ -14,70 +15,74 @@ class UserPage extends React.Component{
     originalDisplayName: undefined,
     pendingUpdateCall: false,
     image: undefined,
-    errors: {} 
+    errors: {},
   };
 
   componentDidMount() {
-    this.loadUser();  
-  };
+    this.loadUser();
+  }
 
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.username !== this.props.match.params.username) {
-       this.loadUser();
-    } 
-  };
-  
+      this.loadUser();
+    }
+  }
+
   onClickEdit = () => {
     this.setState({
-      inEditMode: true
-    })
-  }
+      inEditMode: true,
+    });
+  };
 
   onClickCancel = () => {
     this.setState({
-      inEditMode: false
-    })
-  }
+      inEditMode: false,
+    });
+  };
 
   onClickCancel = () => {
-   const user = { ...this.state.user }
-   if (this.state.originalDisplayName !== undefined) {
-     user.displayName = this.state.originalDisplayName;
-   } 
-   this.setState({
-     user,
-     errors: {},
-     originalDisplayName: undefined,
-     inEditMode: false,
-     pendingUpdateCall: false,
-     image: undefined
-   });
+    const user = { ...this.state.user };
+    if (this.state.originalDisplayName !== undefined) {
+      user.displayName = this.state.originalDisplayName;
+    }
+    this.setState({
+      user,
+      errors: {},
+      originalDisplayName: undefined,
+      inEditMode: false,
+      pendingUpdateCall: false,
+      image: undefined,
+    });
   };
 
   onClickSave = () => {
     const userId = this.props.loggedInUser.id;
     const userUpdate = {
       displayName: this.state.user.displayName,
-      image: this.state.image && this.state.image.split(',')[1]
+      image: this.state.image && this.state.image.split(",")[1],
     };
-    this.setState({ pendingUpdateCall: true })
-    apiCalls.updateUser(userId, userUpdate)
+    this.setState({ pendingUpdateCall: true });
+    apiCalls
+      .updateUser(userId, userUpdate)
       .then((response) => {
         const user = { ...this.state.user };
         user.image = response.data.image;
-        this.setState({
-          inEditMode: false,
-          originalDisplayName: undefined,
-          pendingUpdateCall: false,
-          user,
-          image: undefined,
-        }, () => {
+        this.setState(
+          {
+            inEditMode: false,
+            originalDisplayName: undefined,
+            pendingUpdateCall: false,
+            user,
+            image: undefined,
+          },
+          () => {
             const action = {
-              type: 'update-success',
-              payload: user
-            }
+              type: "update-success",
+              payload: user,
+            };
             this.props.dispatch(action);
-        });
+          }
+        );
       })
       .catch((error) => {
         let errors = {};
@@ -86,7 +91,7 @@ class UserPage extends React.Component{
         }
         this.setState({
           pendingUpdateCall: false,
-          errors
+          errors,
         });
       });
   };
@@ -98,29 +103,29 @@ class UserPage extends React.Component{
       originalDisplayName = user.displayName;
     }
     user.displayName = event.target.value;
-    const errors = {...this.state.errors };
+    const errors = { ...this.state.errors };
     errors.displayName = undefined;
-    this.setState({user, originalDisplayName, errors  });
-  }
+    this.setState({ user, originalDisplayName, errors });
+  };
 
   loadUser = () => {
     const username = this.props.match.params.username;
     if (!username) {
-        return;
+      return;
     }
-    this.setState({ userNotFound: false,  isLoadingUser: true });
+    this.setState({ userNotFound: false, isLoadingUser: true });
     apiCalls
       .getUser(username)
       .then((response) => {
-        this.setState({ user: response.data, isLoadingUser: false });  
-    })
-    .catch((error) => {
+        this.setState({ user: response.data, isLoadingUser: false });
+      })
+      .catch((error) => {
         this.setState({
           userNotFound: true,
-          isLoadingUser: false  
-        })
-    })  
-  } 
+          isLoadingUser: false,
+        });
+      });
+  };
 
   onFileSelect = (event) => {
     if (event.target.files.length === 0) {
@@ -133,12 +138,12 @@ class UserPage extends React.Component{
     reader.onloadend = () => {
       this.setState({
         image: reader.result,
-        errors
-      })
-    }
+        errors,
+      });
+    };
     reader.readAsDataURL(file);
-  }
-  
+  };
+
   render() {
     let pageContent;
     if (this.state.isLoadingUser) {
@@ -147,28 +152,25 @@ class UserPage extends React.Component{
           <div className="spinner-border text-black-50 m- o">
             <span className="sr-only">Loading...</span>
           </div>
-        </div>        
+        </div>
       );
-    } else if (this.state.userNotFound){
+    } else if (this.state.userNotFound) {
       pageContent = (
         <div className="alert alert-danger text-center">
           <div className="alert-heading">
-             <FontAwesomeIcon 
-               icon={faExclamationTriangle} 
-               size="3x"
-             /> 
+            <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
           </div>
-          <h5>User not found</h5>  
-        </div>  
+          <h5>User not found</h5>
+        </div>
       );
     } else {
-      const isEditable = 
+      const isEditable =
         this.props.loggedInUser.username === this.props.match.params.username;
       pageContent = this.state.user && (
-        <ProfileCard 
-          user={this.state.user} 
-          isEditable={isEditable}   
-          inEditMode= {this.state.inEditMode}
+        <ProfileCard
+          user={this.state.user}
+          isEditable={isEditable}
+          inEditMode={this.state.inEditMode}
           onClickEdit={this.onClickEdit}
           onClickCancel={this.onClickCancel}
           onClickSave={this.onClickSave}
@@ -176,26 +178,33 @@ class UserPage extends React.Component{
           pendingUpdateCall={this.state.pendingUpdateCall}
           loadedImage={this.state.image}
           onFileSelect={this.onFileSelect}
-          errors={this.state.errors} 
+          errors={this.state.errors}
         />
-      ); 
-    }  
-    return <div data-testid="userpage">{pageContent}</div>
+      );
+    }
+    return (
+      <div data-testid="userpage">
+        <div className="row">
+          <div className="col">{pageContent}</div>
+          <div className="col">
+            <KiteFeed user={this.props.match.params.username} />
+          </div>
+        </div>
+      </div>
+    );
   }
 }
 
 UserPage.defaultProps = {
   match: {
-    params: {
-
-    }  
-  }  
-}
+    params: {},
+  },
+};
 
 const mapStateToProps = (state) => {
   return {
-    loggedInUser: state
-  }
-}
+    loggedInUser: state,
+  };
+};
 
 export default connect(mapStateToProps)(UserPage);

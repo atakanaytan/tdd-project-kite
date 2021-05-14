@@ -35,3 +35,10 @@ export const updateUser = (userId, body) => {
 export const postKite = (kite) => {
   return axios.post('/api/1.0/kites', kite);
 };
+
+export const loadKites = (username) => {
+  const basePath = username 
+  ? `/api/1.0/users/${username}/kites`
+  : '/api/1.0/kites'
+  return axios.get(basePath + '?page=0&size=5&sort=id,desc');
+};

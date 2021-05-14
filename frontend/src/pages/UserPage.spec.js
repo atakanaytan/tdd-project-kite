@@ -15,6 +15,14 @@ const mockSuccessGetUser = {
   }
 };
 
+apiCalls.loadKites = jest.fn().mockResolvedValue({
+  data: {
+    content: [],
+    number: 0,
+    size: 3
+  }
+});
+
 const mockSuccessUpdateUser = {
   data: {
     id: 1,

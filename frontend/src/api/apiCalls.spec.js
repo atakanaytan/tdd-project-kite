@@ -79,4 +79,22 @@ describe('apiCalls', () => {
       expect(path).toBe('/api/1.0/kites');
     });
   });
+  describe('loadHoaxes', () => {
+    it('calls api/1.0/kites?page=0&size=5&sort=id,desc when no param provided', () => {
+      const mockGetKites = jest.fn();
+      axios.get = mockGetKites;
+      apiCalls.loadKites();
+      expect(mockGetKites).toBeCalledWith(
+        '/api/1.0/kites?page=0&size=5&sort=id,desc'
+      );
+    });
+    it('calls api/1.0/users/users1/kites?page=0&size=5&sort=id,desc when user param provided', () => {
+      const mockGetKites = jest.fn();
+      axios.get = mockGetKites;
+      apiCalls.loadKites('user1');
+      expect(mockGetKites).toBeCalledWith(
+        '/api/1.0/users/user1/kites?page=0&size=5&sort=id,desc'
+      );
+    });
+  })
 });
