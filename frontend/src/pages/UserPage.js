@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import KiteFeed from "../components/KiteFeed";
+import Spinner from '../components/Spinner';
 
 class UserPage extends React.Component {
   state = {
@@ -148,11 +149,7 @@ class UserPage extends React.Component {
     let pageContent;
     if (this.state.isLoadingUser) {
       pageContent = (
-        <div className="d-flex">
-          <div className="spinner-border text-black-50 m- o">
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
+        <Spinner />
       );
     } else if (this.state.userNotFound) {
       pageContent = (

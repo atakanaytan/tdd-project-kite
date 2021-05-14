@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, waitFor, screen } from "@testing-library/react";
 import KiteFeed from "./KiteFeed";
 import * as apiCalls from "../api/apiCalls";
 
@@ -10,6 +10,29 @@ const setup = (props) => {
 const mockEmptyResponse = {
   data: {
     content: [],
+  },
+};
+
+const mockSuccessGetKitesSinglePage = {
+  data: {
+    content: [
+      {
+        id: 10,
+        content: "This is the latest kite",
+        date: 1561294668539,
+        user: {
+          id: 1,
+          username: "user1",
+          displayName: "display1",
+          image: "profile.png",
+        },
+      },
+    ],
+    number: 0,
+    first: true,
+    last: true,
+    size: 5,
+    totalPages: 1,
   },
 };
 
@@ -33,10 +56,41 @@ describe("KiteFeed", () => {
     });
   });
   describe("Layout", () => {
-    it("displays no kite message when the response has empty page", () => {
+    it("displays no kite message when the response has empty page", async () => {
       apiCalls.loadKites = jest.fn().mockResolvedValue(mockEmptyResponse);
+      await (() =>
+        expect(screen.getByText("There are no kites")).toBeInTheDocument());
+    });
+    it("does not display no kite message when the response has page of kite", async () => {
+      apiCalls.loadKites = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetKitesSinglePage);
       const { queryByText } = setup();
-      expect(queryByText("There are no kites")).toBeInTheDocument();
+      await waitFor(() =>
+        expect(queryByText("There are no kites")).not.toBeInTheDocument()
+      );
+    });
+    it("displays spinner when loading the kites", async () => {
+      apiCalls.loadKites = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(mockSuccessGetKitesSinglePage);
+          }, 300);
+        });
+      });
+      const { queryByText } = setup();
+      await waitFor(() =>
+        expect(queryByText("There are no kites")).not.toBeInTheDocument()
+      );
+    });
+    it("displays kite content", async () => {
+      apiCalls.loadKites = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetKitesSinglePage);
+      const { queryByText } = setup();
+      await waitFor(() => {
+        expect(queryByText("This is the latest kite")).toBeInTheDocument();
+      });
     });
   });
 });
