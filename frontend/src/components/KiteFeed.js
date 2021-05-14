@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import * as apiCalls from "../api/apiCalls";
 import Spinner from "../components/Spinner";
+import KiteView from "./KiteView";
 
 class KiteFeed extends Component {
   state = {
@@ -31,7 +32,7 @@ class KiteFeed extends Component {
     return (
       <div>
         {this.state.page.content.map((kite) => {
-          return <span key={kite.id}>{kite.content}</span>;
+          return <KiteView key={kite.id} kite={kite} />;
         })}
       </div>
     );
